@@ -1,0 +1,16 @@
+{
+  "name": "ai-factory-agent",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "agent",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "none",
+  "remoteUser": "ubuntu",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "waitFor": "postStartCommand",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-playwright.playwright"]
+    }
+  }
+}

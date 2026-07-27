@@ -1,0 +1,25 @@
+# Single-agent setup. To run several agents in parallel, duplicate the
+# "agent" service block below (own name, own network, own env_file, own
+# workspace mount pointing at a separate git worktree) — see
+# docs/MULTI_AGENT.md for the full walkthrough, including a worked "agent-2"
+# example.
+
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    cap_add:
+      - NET_ADMIN # required by init-firewall.sh (iptables)
+      - NET_RAW # required by init-firewall.sh (icmp-admin-prohibited rejects)
+    networks:
+      - agent-net
+    env_file:
+      - .env
+    volumes:
+      - .:/workspace:cached
+    command: sleep infinity
+
+networks:
+  agent-net:
+    driver: bridge

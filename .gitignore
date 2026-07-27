@@ -1,0 +1,19 @@
+# Secrets — never commit real values
+.env
+.env.*
+!.env.example
+
+# Beans local state that's fine to keep untracked (Beans itself recommends
+# tracking .beans/ and .beans.yml in git — this only ignores OS/editor noise below)
+
+# Parallel-agent worktrees (see docs/MULTI_AGENT.md)
+/worktrees/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+
+# VS Code local overrides
+.vscode/*
+!.vscode/extensions.json

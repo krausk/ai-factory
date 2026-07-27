@@ -1,0 +1,20 @@
+# OpenHands LLM configuration.
+#
+# Two named profiles so you can pick a provider per run without editing this
+# file. API keys are intentionally NOT set here — LiteLLM (which OpenHands
+# uses under the hood) automatically picks up ANTHROPIC_API_KEY / OPENAI_API_KEY
+# from the environment based on the model's provider prefix. Real key values
+# only ever live in the gitignored .env. See docs/LLM_PROVIDERS.md.
+#
+# Usage:
+#   openhands --headless -t "your task" --llm-config anthropic
+#   openhands --headless -t "your task" --llm-config openai
+
+[llm.anthropic]
+model = "anthropic/claude-sonnet-4-5-20250929"
+
+[llm.openai]
+model = "openai/gpt-4.1"
+
+[core]
+workspace_base = "/workspace"

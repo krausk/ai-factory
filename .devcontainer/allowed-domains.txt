@@ -1,0 +1,18 @@
+# Domains the agent container is allowed to reach outbound.
+# One domain per line. Lines starting with # (and blank lines) are ignored.
+# Re-resolved to IPs every container start by init-firewall.sh.
+#
+# Add whatever a task needs here, then restart the container (or re-run
+# `sudo /usr/local/bin/init-firewall.sh` inside it) to pick up the change.
+# See docs/FIREWALL.md.
+
+# LLM providers
+api.anthropic.com
+api.openai.com
+
+# Package registries
+registry.npmjs.org
+pypi.org
+files.pythonhosted.org
+proxy.golang.org
+sum.golang.org
