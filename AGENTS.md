@@ -9,6 +9,24 @@ a real browser for testing, and Beans for task tracking.
 Run the `beans prime` command and heed its output. This loads the current
 task list and project context tracked in `.beans/`. See docs/BEANS.md.
 
+## Branch and PR workflow
+
+`main` is protected on GitHub — direct pushes are rejected for everyone,
+agents included, and there's no bypass. This is enforced remotely, not just
+a convention, so plan for it rather than discovering it after a failed push:
+
+1. Before starting work on a bean, create a branch off `main`:
+   `git checkout -b <bean-id>-short-description`.
+2. Commit your work on that branch as you go (see the bean-ID convention
+   below).
+3. Push the branch (`git push -u origin <branch>`) and open a PR:
+   `gh pr create --fill` (or with an explicit `--title`/`--body`
+   referencing the bean). Do this once the bean's work is ready for review,
+   not as a last step you might skip.
+4. Do not attempt to merge the PR yourself unless a task explicitly asks
+   you to — leave it open for a human to review and merge, unless told
+   otherwise.
+
 ## Working conventions
 
 - When making a commit, include the relevant bean ID(s) in the commit message
