@@ -69,6 +69,13 @@ fighting over the same working tree / index lock).
 
 5. Repeat for `agent-3`, etc.
 
+**Note on branches**: `agent-2/work` above is just the local base branch for
+that worktree, not something to push straight to `main` — `main` is
+protected (see docs/GITHUB_TOKEN.md and AGENTS.md's branch/PR workflow), so
+from inside the `agent-2` worktree the agent should still cut a per-task
+branch off of `agent-2/work` (or off `main`) for each bean and open a PR
+from that, same as the single-agent setup.
+
 ## Why not `docker compose up --scale`
 
 Compose's `--scale` gives you N identical, anonymous replicas of one
