@@ -10,6 +10,16 @@ echo "== Beans =="
 if [ ! -f .beans.yml ]; then
     echo "No .beans.yml found, running 'beans init'..."
     beans init
+    # `beans init` defaults the bean-ID prefix to the current directory's
+    # basename — which inside this container is always "workspace" (the
+    # fixed mount point), regardless of the actual repo name. Repoint it at
+    # the git remote's repo name instead, so bean IDs (and the branches
+    # named after them) read as e.g. "ai-factory-1234", not "workspace-1234".
+    repo_name=$(basename -s .git "$(git config --get remote.origin.url 2>/dev/null || true)" 2>/dev/null || true)
+    if [ -n "$repo_name" ]; then
+        sed -i -E "s/^([[:space:]]*prefix:[[:space:]]*).*/\1${repo_name}-/" .beans.yml
+        echo "Set bean ID prefix to '${repo_name}-' (from git remote origin)."
+    fi
 else
     echo ".beans.yml already present, skipping 'beans init'."
 fi

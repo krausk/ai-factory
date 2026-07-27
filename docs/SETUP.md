@@ -31,7 +31,7 @@
 
 5. Once inside the container, sanity-check the toolchain:
    ```bash
-   beans --version
+   beans version
    gh auth status
    openhands --version
    python3 -m playwright --version
@@ -39,9 +39,15 @@
 
 ## Running the agent
 
+OpenHands reads LLM config from `LLM_MODEL`/`LLM_API_KEY` env vars, only
+when `--override-with-envs` is passed (see docs/LLM_PROVIDERS.md):
+
 ```bash
-openhands --headless -t "describe the task here" --llm-config anthropic
-# or: --llm-config openai
+LLM_MODEL=anthropic/claude-sonnet-4-5-20250929 LLM_API_KEY="$ANTHROPIC_API_KEY" \
+  openhands --headless --override-with-envs -t "describe the task here"
+# or, for OpenAI:
+LLM_MODEL=openai/gpt-4.1 LLM_API_KEY="$OPENAI_API_KEY" \
+  openhands --headless --override-with-envs -t "describe the task here"
 ```
 
 See docs/BEANS.md for how task tracking ties into this, and

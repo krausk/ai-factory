@@ -2,12 +2,16 @@
 .env
 .env.*
 !.env.example
+!.env.review.example
 
 # Beans local state that's fine to keep untracked (Beans itself recommends
 # tracking .beans/ and .beans.yml in git — this only ignores OS/editor noise below)
 
 # Parallel-agent worktrees (see docs/MULTI_AGENT.md)
 /worktrees/
+
+# Pipeline watcher run logs
+/pipeline/logs/
 
 # OS / editor cruft
 .DS_Store

@@ -1,8 +1,8 @@
-# Single-agent setup. To run several agents in parallel, duplicate the
-# "agent" service block below (own name, own network, own env_file, own
-# workspace mount pointing at a separate git worktree) — see
-# docs/MULTI_AGENT.md for the full walkthrough, including a worked "agent-2"
-# example.
+# Single generic agent, plus the four-stage pipeline (conception -> refinement
+# -> development -> review) documented in docs/PIPELINE.md. To run several
+# *generic* agents in parallel instead, duplicate the "agent" block below (own
+# name, own network, own env_file, own workspace mount pointing at a separate
+# git worktree) — see docs/MULTI_AGENT.md.
 
 services:
   agent:
@@ -20,6 +20,86 @@ services:
       - .:/workspace:cached
     command: sleep infinity
 
+  # --- Pipeline services (docs/PIPELINE.md) ---
+  # All four share the same image/firewall approach and the same workspace
+  # (v1 assumes one bean moves through the pipeline at a time; concurrent
+  # multi-bean pipelines would need per-bean worktrees, same pattern as
+  # docs/MULTI_AGENT.md — a documented future extension, not built here).
+  # They sit idle (sleep infinity) until scripts/pipeline-watch.sh execs a
+  # one-off `openhands` run into the relevant one for a given bean.
+
+  agent-conception:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - agent-conception-net
+    env_file:
+      - .env
+    volumes:
+      - .:/workspace:cached
+    command: sleep infinity
+
+  agent-refinement:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - agent-refinement-net
+    env_file:
+      - .env
+    volumes:
+      - .:/workspace:cached
+    command: sleep infinity
+
+  agent-development:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - agent-development-net
+    env_file:
+      - .env
+    volumes:
+      - .:/workspace:cached
+    command: sleep infinity
+
+  agent-review:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - agent-review-net
+    env_file:
+      # Order matters: .env.review overrides GITHUB_TOKEN/GITHUB_USERNAME
+      # from .env with the review agent's own separate GitHub identity,
+      # while still inheriting the shared LLM provider keys from .env.
+      - .env
+      - .env.review
+    volumes:
+      - .:/workspace:cached
+    command: sleep infinity
+
 networks:
   agent-net:
+    driver: bridge
+  agent-conception-net:
+    driver: bridge
+  agent-refinement-net:
+    driver: bridge
+  agent-development-net:
+    driver: bridge
+  agent-review-net:
     driver: bridge
