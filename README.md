@@ -27,9 +27,14 @@ agents in parallel.
   allowed-domains.txt     Edit this to allow a task to reach a new domain
   post-create.sh          One-time setup: beans init, gh auth, playwright browsers
 docker-compose.yml        Agent service definition (see docs/MULTI_AGENT.md to scale out)
-config.toml               OpenHands LLM profiles (Anthropic + OpenAI)
 AGENTS.md                 Instructions read by the agent itself
 .env.example              Secrets template — copy to .env, never commit .env
+.env.review.example       Review agent's separate GitHub identity — copy to .env.review
+pipeline/roles/           Per-stage instructions for the conception/refinement/development/review pipeline
+scripts/
+  pipeline-up.sh          Bring up the four pipeline containers
+  pipeline-watch.sh        Watches Beans and drives beans through the pipeline
+  approve-spec.sh          The one human checkpoint: approve a spec for development
 docs/
   SETUP.md                Start here
   LLM_PROVIDERS.md         Getting Anthropic/OpenAI API keys
@@ -37,6 +42,7 @@ docs/
   FIREWALL.md              How the firewall works, how to extend it
   BEANS.md                 How task tracking works
   MULTI_AGENT.md           Running several agents at once
+  PIPELINE.md              The conception → refinement → development → review pipeline
 ```
 
 ## Quickstart
@@ -50,7 +56,14 @@ devcontainer up --workspace-folder .
 Then, inside the container:
 
 ```bash
-openhands --headless -t "your task here" --llm-config anthropic
+LLM_MODEL=anthropic/claude-sonnet-4-5-20250929 LLM_API_KEY="$ANTHROPIC_API_KEY" \
+  openhands --headless --override-with-envs -t "your task here"
 ```
 
 Full walkthrough: [docs/SETUP.md](docs/SETUP.md).
+
+## Multi-stage pipeline
+
+For an idea to flow through conception → refinement → development → review
+with only two points of human input (approving the spec, merging the final
+PR), see [docs/PIPELINE.md](docs/PIPELINE.md).
