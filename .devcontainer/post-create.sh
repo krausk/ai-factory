@@ -34,6 +34,22 @@ else
 fi
 
 echo
+echo "== Firewall domain allowlist =="
+# init-firewall.sh reads .devcontainer/allowed-domains.txt from *this*
+# (target) repo, live, every container start — so it needs to exist here,
+# seeded from the image's default the same way AGENTS.md is above. Must run
+# before init-firewall.sh actually executes (pipeline-up.sh/devcontainer
+# lifecycle order), or the very first firewall run allowlists nothing but
+# GitHub and every other outbound call fails.
+if [ ! -f .devcontainer/allowed-domains.txt ]; then
+    echo "No .devcontainer/allowed-domains.txt found in the target repo, copying default..."
+    mkdir -p .devcontainer
+    cp /usr/local/share/ai-factory/allowed-domains.txt.template .devcontainer/allowed-domains.txt
+else
+    echo ".devcontainer/allowed-domains.txt already present, leaving it as-is."
+fi
+
+echo
 echo "== GitHub CLI =="
 if [ -n "${GITHUB_TOKEN:-}" ]; then
     # `gh` already authenticates every call with GITHUB_TOKEN/GH_TOKEN from

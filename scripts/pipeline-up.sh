@@ -13,12 +13,17 @@ echo "Starting pipeline containers..."
 docker compose up -d "${SERVICES[@]}"
 
 for svc in "${SERVICES[@]}"; do
+    # Order matters: real devcontainer lifecycle runs postCreateCommand
+    # before postStartCommand (firewall), and post-create.sh now seeds
+    # .devcontainer/allowed-domains.txt into the target repo on first run —
+    # the firewall has to read that file *after* it exists, or the very
+    # first run allowlists nothing but GitHub.
     echo
+    echo "=== $svc: post-create (beans init check, gh auth, playwright browsers, firewall allowlist seed) ==="
+    docker compose exec -T "$svc" bash /usr/local/share/ai-factory/post-create.sh
+
     echo "=== $svc: firewall ==="
     docker compose exec -T --user root "$svc" /usr/local/bin/init-firewall.sh
-
-    echo "=== $svc: post-create (beans init check, gh auth, playwright browsers) ==="
-    docker compose exec -T "$svc" bash /usr/local/share/ai-factory/post-create.sh
 done
 
 echo

@@ -86,6 +86,25 @@ COPY .devcontainer/AGENTS.md.template /usr/local/share/ai-factory/AGENTS.md.temp
 COPY .devcontainer/post-create.sh /usr/local/share/ai-factory/post-create.sh
 RUN chmod 755 /usr/local/share/ai-factory/post-create.sh
 
+# Pipeline role instructions (docs/PIPELINE.md): same reasoning again — each
+# stage's -f file has to be readable with /workspace (the target repo) as
+# cwd, but the roles themselves are ai-factory content, not target-repo
+# content, so they have to be baked into the image rather than referenced by
+# a workspace-relative path (scripts/pipeline-watch.sh used to do that and
+# it can't ever have worked, since these files are never present in
+# /workspace either).
+COPY pipeline/roles/ /usr/local/share/ai-factory/pipeline-roles/
+
+# Default domain allowlist: same reasoning again. init-firewall.sh reads
+# /workspace/.devcontainer/allowed-domains.txt *live* (deliberately, so it's
+# editable without a rebuild — see that script's own comments), but a target
+# repo has no reason to already have a .devcontainer/ of its own. Without a
+# copy there, the firewall allowlists nothing but GitHub — not even the LLM
+# provider APIs — and every agent call fails with "Network is unreachable".
+# Baked in here purely as the seed post-create.sh copies in on first run,
+# same pattern as AGENTS.md.template.
+COPY .devcontainer/allowed-domains.txt /usr/local/share/ai-factory/allowed-domains.txt.template
+
 # Sudo scoped to exactly the firewall script — nothing else — for the
 # non-root user the agent actually runs as. The base image's "ubuntu" user
 # is a member of the "sudo" group by default (full ALL:ALL sudo rights);

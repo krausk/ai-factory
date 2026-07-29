@@ -99,7 +99,7 @@ process_stage() {
         if docker compose exec -T -e BEAN_ID="$id" "${extra_env[@]}" "$service" bash -c "
             export LLM_MODEL='$model'
             export LLM_API_KEY=\"\$$key_var\"
-            openhands --headless --override-with-envs -f 'pipeline/roles/$stage.md'
+            openhands --headless --override-with-envs -f '/usr/local/share/ai-factory/pipeline-roles/$stage.md'
         " >"$run_log" 2>&1; then
             log "$id: $stage run finished (see $run_log)"
         else
