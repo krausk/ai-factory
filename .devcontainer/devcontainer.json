@@ -5,7 +5,7 @@
   "workspaceFolder": "/workspace",
   "shutdownAction": "none",
   "remoteUser": "ubuntu",
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postCreateCommand": "bash /usr/local/share/ai-factory/post-create.sh",
   "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
   "waitFor": "postStartCommand",
   "customizations": {

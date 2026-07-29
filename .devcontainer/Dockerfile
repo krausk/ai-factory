@@ -77,6 +77,15 @@ RUN chmod 750 /usr/local/bin/init-firewall.sh
 # it into a target repo that doesn't already have its own AGENTS.md.
 COPY .devcontainer/AGENTS.md.template /usr/local/share/ai-factory/AGENTS.md.template
 
+# post-create.sh itself: same reasoning as AGENTS.md.template above — it has
+# to run against /workspace (the target repo) but isn't part of it, so it
+# must be baked into the image rather than referenced by a path relative to
+# workspaceFolder (which devcontainer.json's postCreateCommand used to do,
+# and which silently can't work since this file was never actually in the
+# image or the target repo either).
+COPY .devcontainer/post-create.sh /usr/local/share/ai-factory/post-create.sh
+RUN chmod 755 /usr/local/share/ai-factory/post-create.sh
+
 # Sudo scoped to exactly the firewall script — nothing else — for the
 # non-root user the agent actually runs as. The base image's "ubuntu" user
 # is a member of the "sudo" group by default (full ALL:ALL sudo rights);

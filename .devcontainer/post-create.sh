@@ -36,9 +36,18 @@ fi
 echo
 echo "== GitHub CLI =="
 if [ -n "${GITHUB_TOKEN:-}" ]; then
-    echo "$GITHUB_TOKEN" | gh auth login --with-token
+    # `gh` already authenticates every call with GITHUB_TOKEN/GH_TOKEN from
+    # the environment automatically (no `gh auth login` needed) — and while
+    # that env var is set, `gh auth login --with-token` actively refuses to
+    # run ("the value of the GITHUB_TOKEN environment variable is being
+    # used for authentication..."), which under `set -e` used to abort this
+    # whole script. Just report status instead of trying to log in.
     if [ -n "${GITHUB_USERNAME:-}" ]; then
         git config --global user.name "$GITHUB_USERNAME"
+        # GitHub's own noreply address for this user — commits need *some*
+        # user.email or they fail outright, and this keeps a real address
+        # out of the target repo's history.
+        git config --global user.email "${GITHUB_USERNAME}@users.noreply.github.com"
     fi
     gh auth status || true
 else

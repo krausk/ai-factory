@@ -18,7 +18,7 @@ for svc in "${SERVICES[@]}"; do
     docker compose exec -T --user root "$svc" /usr/local/bin/init-firewall.sh
 
     echo "=== $svc: post-create (beans init check, gh auth, playwright browsers) ==="
-    docker compose exec -T "$svc" bash .devcontainer/post-create.sh
+    docker compose exec -T "$svc" bash /usr/local/share/ai-factory/post-create.sh
 done
 
 echo
