@@ -15,6 +15,17 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Beans data lives in TARGET_REPO_PATH (beans init runs there, in-container —
+# docs/BEANS.md), not in this (ai-factory) repo, so every `beans` invocation
+# below must run with that as its cwd. Read just this one var out of .env
+# rather than sourcing the whole file, so provider secrets never touch this
+# host script's environment or process list.
+TARGET_REPO_PATH=$(grep -E '^TARGET_REPO_PATH=' .env | head -1 | cut -d= -f2-)
+if [ -z "$TARGET_REPO_PATH" ] || [ ! -d "$TARGET_REPO_PATH" ]; then
+    echo "TARGET_REPO_PATH is unset or doesn't exist (checked .env) — set it first (docs/SETUP.md)." >&2
+    exit 1
+fi
+
 INTERVAL=60
 ONCE=false
 while [ $# -gt 0 ]; do
@@ -38,18 +49,23 @@ mkdir -p "$LOG_DIR"
 # script or its process list. Review deliberately uses a different provider
 # than development — reviewing code with a different model than the one
 # that wrote it is a real, if partial, defense against the same model
-# rubber-stamping its own work.
+# rubber-stamping its own work. Development runs against a local llama-server
+# (docs/LLM_PROVIDERS.md) instead of a paid API — LLM_BASE_URL is only set
+# for stages that need one, everything else talks to the provider's default.
 declare -A LLM_MODEL=(
     [conception]=anthropic/claude-sonnet-4-5-20250929
     [refinement]=anthropic/claude-sonnet-4-5-20250929
-    [development]=anthropic/claude-sonnet-4-5-20250929
+    [development]=openai/gemma-4-31B-it-QAT-Q4_0.gguf
     [review]=openai/gpt-4.1
 )
 declare -A LLM_KEY_VAR=(
     [conception]=ANTHROPIC_API_KEY
     [refinement]=ANTHROPIC_API_KEY
-    [development]=ANTHROPIC_API_KEY
+    [development]=LOCAL_LLM_API_KEY
     [review]=OPENAI_API_KEY
+)
+declare -A LLM_BASE_URL=(
+    [development]=http://host.docker.internal:8080/v1
 )
 
 log() {
@@ -61,20 +77,26 @@ process_stage() {
     local service="agent-$stage"
     local model="${LLM_MODEL[$stage]}"
     local key_var="${LLM_KEY_VAR[$stage]}"
+    local base_url="${LLM_BASE_URL[$stage]:-}"
 
     local ids
-    ids=$(beans list --tag "stage:$stage" --status todo -q || true)
+    ids=$(cd "$TARGET_REPO_PATH" && beans list --tag "stage:$stage" --status todo -q || true)
     [ -z "$ids" ] && return 0
+
+    local extra_env=()
+    if [ -n "$base_url" ]; then
+        extra_env=(-e "LLM_BASE_URL=$base_url")
+    fi
 
     while IFS= read -r id; do
         [ -z "$id" ] && continue
         log "Claiming $id for stage:$stage"
-        beans update "$id" -s in-progress
+        (cd "$TARGET_REPO_PATH" && beans update "$id" -s in-progress)
 
         local run_log="$LOG_DIR/${id}-${stage}-$(date +%s).log"
         log "Running $service (model=$model) for $id, logging to $run_log"
 
-        if docker compose exec -T -e BEAN_ID="$id" "$service" bash -c "
+        if docker compose exec -T -e BEAN_ID="$id" "${extra_env[@]}" "$service" bash -c "
             export LLM_MODEL='$model'
             export LLM_API_KEY=\"\$$key_var\"
             openhands --headless --override-with-envs -f 'pipeline/roles/$stage.md'

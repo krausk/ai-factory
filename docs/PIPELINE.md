@@ -104,11 +104,14 @@ token's identity) strictly need the review agent's approval.
 The installed OpenHands CLI has no `config.toml`/`--llm-config` mechanism —
 LLM selection is via `--override-with-envs` plus `LLM_MODEL`/`LLM_API_KEY`
 env vars (see docs/LLM_PROVIDERS.md). `scripts/pipeline-watch.sh` maps each
-stage to a model this way: conception, refinement, and development use
-Anthropic; review deliberately uses OpenAI instead. Reviewing code with a
-different model than the one that wrote it is a real, if partial, defense
-against a model rubber-stamping its own work. Change the `LLM_MODEL` /
-`LLM_KEY_VAR` maps at the top of the script if you want a different split.
+stage to a model this way: conception and refinement use Anthropic; review
+deliberately uses OpenAI instead — reviewing code with a different model
+than the one that wrote it is a real, if partial, defense against a model
+rubber-stamping its own work. Development runs against a local llama-server
+on the host GPU (`LLM_BASE_URL=http://host.docker.internal:8080/v1`) instead
+of a paid API, since it's higher-volume, more mechanical work than spec
+writing or review. Change the `LLM_MODEL` / `LLM_KEY_VAR` / `LLM_BASE_URL`
+maps at the top of the script if you want a different split.
 
 ## Limitations / not built (yet)
 
