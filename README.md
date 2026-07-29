@@ -5,6 +5,11 @@ firewalled network access, real coding/testing tools (including a browser),
 task tracking that survives across sessions, and the ability to run several
 agents in parallel.
 
+**This repo holds only the factory** — the container, firewall, and LLM
+tooling. It does not itself get developed by the agent. Point it at whatever
+project you actually want worked on via `TARGET_REPO_PATH` in `.env`, which
+gets bind-mounted as `/workspace` inside the container. See Quickstart below.
+
 ## Stack
 
 | Concern | Choice |
@@ -25,10 +30,10 @@ agents in parallel.
   Dockerfile             Playwright base + OpenHands + Beans + gh CLI + firewall script
   init-firewall.sh        Default-deny egress firewall, self-testing
   allowed-domains.txt     Edit this to allow a task to reach a new domain
-  post-create.sh          One-time setup: beans init, gh auth, playwright browsers
-docker-compose.yml        Agent service definition (see docs/MULTI_AGENT.md to scale out)
-AGENTS.md                 Instructions read by the agent itself
-.env.example              Secrets template — copy to .env, never commit .env
+  post-create.sh          One-time setup: beans init, AGENTS.md, gh auth, playwright browsers
+  AGENTS.md.template      Copied into the target repo (as AGENTS.md) if it doesn't have one
+docker-compose.yml        Agent + pipeline service definitions, workspace = $TARGET_REPO_PATH for all of them (see docs/MULTI_AGENT.md to scale out)
+.env.example              Secrets + TARGET_REPO_PATH template — copy to .env, never commit .env
 .env.review.example       Review agent's separate GitHub identity — copy to .env.review
 pipeline/roles/           Per-stage instructions for the conception/refinement/development/review pipeline
 scripts/
@@ -48,8 +53,10 @@ docs/
 ## Quickstart
 
 ```bash
-cp .env.example .env   # fill in API keys, see docs/LLM_PROVIDERS.md and docs/GITHUB_TOKEN.md
-# Open in VS Code → "Reopen in Container", or:
+cp .env.example .env   # fill in API keys (docs/LLM_PROVIDERS.md), a GitHub token
+                        # (docs/GITHUB_TOKEN.md), and TARGET_REPO_PATH — the
+                        # absolute path to the repo you actually want developed
+# Open this (ai-factory) folder in VS Code → "Reopen in Container", or:
 devcontainer up --workspace-folder .
 ```
 

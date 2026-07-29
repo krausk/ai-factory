@@ -25,6 +25,15 @@ else
 fi
 
 echo
+echo "== Agent instructions =="
+if [ ! -f AGENTS.md ]; then
+    echo "No AGENTS.md found in the target repo, copying template..."
+    cp /usr/local/share/ai-factory/AGENTS.md.template AGENTS.md
+else
+    echo "AGENTS.md already present, leaving it as-is."
+fi
+
+echo
 echo "== GitHub CLI =="
 if [ -n "${GITHUB_TOKEN:-}" ]; then
     echo "$GITHUB_TOKEN" | gh auth login --with-token
