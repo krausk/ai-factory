@@ -10,12 +10,15 @@ importantly, the coding agent can read and write them directly through the
 
 - `beans` (the Go CLI) is built into the container image.
 - `post-create.sh` runs `beans init` the first time the container is
-  created, generating `.beans.yml` and `.beans/` at the repo root — commit
-  these, they're meant to be tracked in git.
-- `AGENTS.md` instructs the agent: **"before you do anything else, run
-  `beans prime` and heed its output"** — this is Beans' own documented
-  integration hook, and it's what loads current task context into the
-  agent's view of the project before it starts working.
+  created, generating `.beans.yml` and `.beans/` at the **target repo's**
+  root (`/workspace`, i.e. `TARGET_REPO_PATH` — not ai-factory) — commit
+  these in the target repo, they're meant to be tracked in git.
+- The target repo's `AGENTS.md` (copied there from
+  `.devcontainer/AGENTS.md.template` on first run if it doesn't already
+  have one — see docs/SETUP.md) instructs the agent: **"before you do
+  anything else, run `beans prime` and heed its output"** — this is Beans'
+  own documented integration hook, and it's what loads current task context
+  into the agent's view of the project before it starts working.
 
 ## Using it yourself
 
@@ -35,7 +38,7 @@ What should we work on next?
 It's time to tackle myproj-123.
 ```
 
-Per `AGENTS.md`, the agent is also instructed to reference bean IDs in commit
+Per the target repo's `AGENTS.md`, the agent is also instructed to reference bean IDs in commit
 messages (e.g. `Fix login redirect (myproj-42)`), so completed work stays
 traceable back to the task that prompted it. Completed/archived beans double
 as project memory the agent can query for context about past work.

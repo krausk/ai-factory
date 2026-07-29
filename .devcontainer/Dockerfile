@@ -72,6 +72,11 @@ COPY --from=beans-builder /go/bin/beans /usr/local/bin/beans
 COPY .devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh
 RUN chmod 750 /usr/local/bin/init-firewall.sh
 
+# AGENTS.md template: baked into the image (rather than bind-mounted, since
+# /workspace is the *target* repo, not this one) so post-create.sh can copy
+# it into a target repo that doesn't already have its own AGENTS.md.
+COPY .devcontainer/AGENTS.md.template /usr/local/share/ai-factory/AGENTS.md.template
+
 # Sudo scoped to exactly the firewall script — nothing else — for the
 # non-root user the agent actually runs as. The base image's "ubuntu" user
 # is a member of the "sudo" group by default (full ALL:ALL sudo rights);

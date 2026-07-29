@@ -1,8 +1,14 @@
+# This repo (ai-factory) holds only the agent tooling — the workspace the
+# agent actually develops in is a *different* repo on the host, bind-mounted
+# in via TARGET_REPO_PATH (set in .env, must be an absolute path). See
+# docs/SETUP.md.
+#
 # Single generic agent, plus the four-stage pipeline (conception -> refinement
-# -> development -> review) documented in docs/PIPELINE.md. To run several
-# *generic* agents in parallel instead, duplicate the "agent" block below (own
-# name, own network, own env_file, own workspace mount pointing at a separate
-# git worktree) — see docs/MULTI_AGENT.md.
+# -> development -> review) documented in docs/PIPELINE.md — all five share
+# the same TARGET_REPO_PATH workspace mount. To run several *generic* agents
+# in parallel instead, duplicate the "agent" block below (own name, own
+# network, own env_file, own workspace mount pointing at a separate git
+# worktree of the target repo) — see docs/MULTI_AGENT.md.
 
 services:
   agent:
@@ -12,12 +18,14 @@ services:
     cap_add:
       - NET_ADMIN # required by init-firewall.sh (iptables)
       - NET_RAW # required by init-firewall.sh (icmp-admin-prohibited rejects)
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # reach a local model server (e.g. Ollama) running on the host
     networks:
       - agent-net
     env_file:
       - .env
     volumes:
-      - .:/workspace:cached
+      - ${TARGET_REPO_PATH}:/workspace:cached
     command: sleep infinity
 
   # --- Pipeline services (docs/PIPELINE.md) ---
@@ -35,12 +43,14 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - agent-conception-net
     env_file:
       - .env
     volumes:
-      - .:/workspace:cached
+      - ${TARGET_REPO_PATH}:/workspace:cached
     command: sleep infinity
 
   agent-refinement:
@@ -50,12 +60,14 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - agent-refinement-net
     env_file:
       - .env
     volumes:
-      - .:/workspace:cached
+      - ${TARGET_REPO_PATH}:/workspace:cached
     command: sleep infinity
 
   agent-development:
@@ -65,12 +77,14 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - agent-development-net
     env_file:
       - .env
     volumes:
-      - .:/workspace:cached
+      - ${TARGET_REPO_PATH}:/workspace:cached
     command: sleep infinity
 
   agent-review:
@@ -80,6 +94,8 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - agent-review-net
     env_file:
@@ -89,7 +105,7 @@ services:
       - .env
       - .env.review
     volumes:
-      - .:/workspace:cached
+      - ${TARGET_REPO_PATH}:/workspace:cached
     command: sleep infinity
 
 networks:

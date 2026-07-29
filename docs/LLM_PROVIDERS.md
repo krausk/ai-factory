@@ -40,6 +40,35 @@ You only need to set up the provider(s) you actually intend to use.
      openhands --headless --override-with-envs -t "your task here"
    ```
 
+## Local (self-hosted, e.g. Ollama on the host GPU)
+
+For lightweight/mechanical tasks you can run a model on your own hardware
+instead of paying per token.
+
+1. On the **host** (not inside the container), serve a model bound to all
+   interfaces so the container's bridge network can reach it:
+   ```bash
+   OLLAMA_HOST=0.0.0.0 ollama serve
+   ollama pull gemma3:27b   # pick whatever quantized model actually fits your GPU
+   ```
+2. `docker-compose.yml` already maps `host.docker.internal` to the host
+   gateway (`extra_hosts: host-gateway`) on every agent service, and
+   `init-firewall.sh` already allowlists that whole host subnet — no
+   firewall edits needed.
+3. To run a task against it:
+   ```bash
+   LLM_MODEL=ollama/gemma3:27b LLM_BASE_URL=http://host.docker.internal:11434 \
+     LLM_API_KEY=ollama openhands --headless --override-with-envs -t "your task here"
+   ```
+   `LLM_API_KEY` is ignored by Ollama itself but OpenHands' CLI expects the
+   flag set to something non-empty — any placeholder value works. Update
+   `LLM_MODEL` to match whatever you actually pulled.
+
+This is best suited for narrow, well-specified tasks — local models
+generally aren't as reliable at OpenHands' structured tool-calling as
+Claude/GPT-4-class models, so keep planning and ambiguous work on
+Anthropic/OpenAI.
+
 ## Notes
 
 - `LLM_MODEL` follows LiteLLM's `<provider>/<model>` naming; `LLM_API_KEY` is
